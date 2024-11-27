@@ -1,4 +1,6 @@
 import re
+import json
+import base64
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler
 import logging
@@ -330,16 +332,36 @@ async def confirm_and_send_to_admin(update, context):
         f"🌐 <b>Manzil:</b> Latitude: {latitude}, Longitude: {longitude}\n"
     )
 
-    # Inline tugmachalar
+    # Foydalanuvchi ma'lumotlarini JSON formatida kodlash
+    data = {
+        "name": name,
+        "phone": phone,
+        "telegram_link": telegram_link,
+        "region_name": region_name,
+        "gender": gender,
+        "bio": bio,
+        "latitude": latitude,
+        "longitude": longitude,
+        "photos": photos
+    }
+
+    # JSON formatida kodlash
+    json_data = json.dumps(data)
+
+    # Base64 formatiga o'zgartirish
+    encoded_data = base64.b64encode(json_data.encode()).decode()
+
+    # Callback data sifatida yuborish
     button = [
-        [InlineKeyboardButton(text="✅ Bazaga saqlash", callback_data=f"service:save:{query.from_user.id}")],
-        [InlineKeyboardButton(text="❌ O'chirish", callback_data=f"service:delete:{query.from_user.id}")]
+        [InlineKeyboardButton(text="✅ Bazaga saqlash", callback_data=f"service:save:{encoded_data}")],
+        [InlineKeyboardButton(text="❌ O'chirib yuborish", callback_data=f"service:delete:{encoded_data}")]
     ]
+
     reply_markup = InlineKeyboardMarkup(button)
 
     # Admin ID ga yuborish
     if query.data == "approve":
-        context.bot_data[query.from_user.id] = user_data.copy()  # Vaqtinchalik saqlash
+
         admin_chat_id = ADMIN_ID  # Agar bir nechta admin bo'lsa, bitta ID ni tanlang
         for photo in photos:
             await context.bot.send_photo(chat_id=admin_chat_id, photo=photo)

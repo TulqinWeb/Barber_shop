@@ -1,5 +1,7 @@
 from barbershop_db import DataBase
 from config import ADMIN_ID
+import base64
+import json
 
 db = DataBase()
 
@@ -9,11 +11,25 @@ async def handle_admin_decision(update, context):
     await query.answer()
     callback_data = query.data
 
-    # Admin qismi
-    user_data = context.bot_data.get(query.from_user.id)
-    if not user_data:
-        await context.bot.send_message(chat_id=query.from_user.id, text="Ma'lumotlar topilmadi.")
-        return
+    # Callback data'dan Base64 kodlangan ma'lumotni olish
+    encoded_data = query.data.split(":")[2]
+    decoded_data = base64.b64decode(encoded_data).decode()
+
+    # JSON formatida dekodlash
+    user_data = json.loads(decoded_data)
+
+    # Foydalanuvchi ma'lumotlari
+    name = user_data["name"]
+    phone = user_data["phone"]
+    telegram_link = user_data["telegram_link"]
+    region_name = user_data["region_name"]
+    gender = user_data["gender"]
+    bio = user_data["bio"]
+    latitude = user_data["latitude"]
+    longitude = user_data["longitude"]
+    photos = user_data["photos"]
+
+
 
     # Admin huquqini tekshirish
     if str(update.effective_user.id) not in ADMIN_ID:
@@ -25,41 +41,27 @@ async def handle_admin_decision(update, context):
 
     # Bazaga saqlash yoki o'chirish
     if callback_data.startswith("service:"):
-        action = callback_data.split(":")[1]
-        user_id = callback_data.split(":")[2]
-        user_data = context.bot_data.get(int(user_id))
+        parts = callback_data.split(":")
+        action = parts[1]
 
-        if not user_data:
-            await context.bot.send_message(chat_id=query.from_user.id, text="Ma'lumotlar topilmadi.")
-            return
 
-        name = user_data.get("name")
         print(name)
-        phone = user_data.get("phone_number")
+
         print(phone)
-        telegram_link = user_data.get("telegram_link")
+
         print(telegram_link)
-        region_name = user_data.get("region_name")
+
         print(region_name)
-        gender = user_data.get("gender")
+
         print(gender)
-        bio = user_data.get("bio")
+
         print(bio)
-        latitude = user_data.get("latitude")
+
         print(latitude)
-        longitude = user_data.get("longitude")
+
         print(longitude)
-        photos = user_data.get("photos", [])
+
         print(photos)
-
-        # Ma'lumotlarni tekshirish
-        required_fields = [name, phone, region_name, gender]
-        if any(field is None or field == "" for field in required_fields):
-            await context.bot.send_message(
-                chat_id=query.from_user.id,
-                text="❌ Ma'lumotlar to'liq emas. Iltimos, qaytadan to'ldiring.")
-
-            return
 
         if action == "save":
             # Regionni olish yoki yaratish
