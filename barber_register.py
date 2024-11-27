@@ -332,13 +332,14 @@ async def confirm_and_send_to_admin(update, context):
 
     # Inline tugmachalar
     button = [
-        [InlineKeyboardButton(text="✅ Bazaga saqlash", callback_data=f"save")],
-        [InlineKeyboardButton(text="❌ O'chirib yuborish", callback_data=f"delete")]
+        [InlineKeyboardButton(text="✅ Bazaga saqlash", callback_data=f"service:save:{query.from_user.id}")],
+        [InlineKeyboardButton(text="❌ O'chirish", callback_data=f"service:delete:{query.from_user.id}")]
     ]
     reply_markup = InlineKeyboardMarkup(button)
 
     # Admin ID ga yuborish
     if query.data == "approve":
+        context.bot_data[query.from_user.id] = user_data.copy()  # Vaqtinchalik saqlash
         admin_chat_id = ADMIN_ID  # Agar bir nechta admin bo'lsa, bitta ID ni tanlang
         for photo in photos:
             await context.bot.send_photo(chat_id=admin_chat_id, photo=photo)

@@ -4,7 +4,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Messa
 import logging
 
 
-from admin import  handle_admin_response
+from admin import  handle_admin_decision
 from barber_register import phone_number, name, bio, start_register, verify_telegram_link, gender_selection, \
     region_selected, handle_photos, next_step, handle_location, confirm_and_send_to_admin
 
@@ -59,7 +59,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(cov_handler())
     app.add_handler(MessageHandler(filters.TEXT, message_handler))
-    app.add_handler(CallbackQueryHandler(handle_admin_response, pattern="^(save|delete)$"))
+    app.add_handler(CallbackQueryHandler(handle_admin_decision, pattern="^service:"))
     app.add_handler(CallbackQueryHandler(inline_handler))
 
 
